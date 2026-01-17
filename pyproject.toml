@@ -1,0 +1,22 @@
+[project]
+name = "plotfox"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Matthias Kübrich", email = "matthias.kuebrich@t-online.de" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.1",
+    "scikit-learn>=1.8.0",
+    "yfinance>=1.0",
+]
+
+[project.scripts]
+plotfox = "plotfox:main"
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
