@@ -1,4 +1,4 @@
-from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import ScalarFormatter, LogLocator
 import numpy
 from pandas import DataFrame
 from typing import Literal, Sequence
@@ -91,11 +91,8 @@ def plot(
                 )
             case "mid-running-avg", num_days:
                 hist["CloseT_ravg"] = (
-                    hist["CloseT"]
-                    .rolling(window=num_days, center=True, min_periods=1)
-                    .mean()
+                    hist["CloseT"].rolling(window=num_days, center=True).mean()
                 )
-
                 plt.plot(
                     hist.index,
                     dispT(hist["CloseT_ravg"]),
@@ -112,56 +109,6 @@ def plot(
                         hist["CloseT"][-num_days:].values.reshape(-1, 1),
                     )
                     .coef_[0, 0]
-                )
-
-                hist["lin_predT"] = (
-                    hist["CloseT_ravg"].iloc[-num_days // 2]
-                    + (
-                        hist["timestamp_numeric"][-num_days // 2 :]
-                        - hist["timestamp_numeric"].iloc[-num_days // 2]
-                    )
-                    * lin_pred_factorT
-                )
-                plt.plot(
-                    hist.index,
-                    dispT(hist["lin_predT"]),
-                    label=f"{num_days}-Day Mid. Running Avg. Pred. (lin)",
-                    zorder=next_zorder(),
-                )
-
-                hist["rest_predT"] = DataFrame(
-                    [
-                        hist["CloseT"][(i + 1) * 2 - 1 :].mean()
-                        for i in range((-num_days + 1) // 2, 0)
-                    ],
-                    index=hist.index[(-num_days + 1) // 2 :],
-                )
-                plt.plot(
-                    hist.index,
-                    dispT(hist["rest_predT"]),
-                    label=f"{num_days}-Day Mid. Running Avg. Pred. (rest)",
-                    zorder=next_zorder(),
-                )
-
-                hist["pred_lin_projT"] = DataFrame(
-                    [
-                        (
-                            hist["CloseT"][i - (num_days - 1) // 2 :].sum()
-                            + (
-                                hist["lin_predT"][: i - (num_days - 1) // 2 + num_days]
-                                + hist["CloseT"].iloc[-1]
-                            ).sum()
-                        )
-                        / num_days
-                        for i in range((-num_days + 1) // 2, 0)
-                    ],
-                    index=hist.index[(-num_days + 1) // 2 :],
-                )
-                plt.plot(
-                    hist.index,
-                    dispT(hist["pred_lin_projT"]),
-                    label=f"{num_days}-Day Mid. Running Avg. Pred. (lin-proj)",
-                    zorder=next_zorder(),
                 )
 
                 ravg_endT = (
@@ -195,15 +142,7 @@ def plot(
                 plt.plot(
                     hist.index,
                     dispT(hist["ravg_lin_predT"]),
-                    label=f"{num_days}-Day Mid. Running Avg. Pred. (avg-lin)",
-                    zorder=next_zorder(),
-                )
-
-                hist["lin_pred_m1p5T"] = line_pred_m1p5T
-                plt.plot(
-                    hist.index,
-                    dispT(hist["lin_pred_m1p5T"]),
-                    label=f"{num_days}-Day Mid. Running Avg. Pred. (lin*1.5)",
+                    label=f"{num_days}-Day Mid. Running Avg. Pred.",
                     zorder=next_zorder(),
                 )
 
@@ -212,6 +151,7 @@ def plot(
     plt.ylabel("Price")
     plt.yscale("log")
     plt.gca().yaxis.set_major_formatter(ScalarFormatter())
+    plt.gca().yaxis.set_major_locator(LogLocator(subs="all"))
     plt.legend()
     plt.show()
 
@@ -220,16 +160,18 @@ def main():
     dro = yf.Ticker("DRH.MU")
     plot(
         dro,
-        period="1y",
+        period="10y",
         charts=(
             "candlestick",
             # ("running-avg", 50),
             # "close",
-            ("mid-running-avg", 55),
+            # ("mid-running-avg", 50),
             # ("mid-running-avg", 100),
             # ("mid-running-avg", 150),
             # ("mid-running-avg", 200),
-            # ("mid-running-avg", 300),
+            ("mid-running-avg", 300),
+            ("mid-running-avg", 500),
+            ("mid-running-avg", 1000),
         ),
     )
 
