@@ -2,6 +2,6 @@
 python.uv_venv_auto = true
 
 [tools]
-ruff = "0.14.11"
+ruff = "0.14.14"
 ty = "0.0.11"
 uv = "0.9.26"
