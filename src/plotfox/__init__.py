@@ -72,14 +72,14 @@ def plot(
                 plt.plot(
                     hist.index,
                     hist["Open"],
-                    label=f"{ticker} - Open",
+                    label=f"{ticker.ticker} - Open",
                     zorder=next_zorder(),
                 )
             case "close":
                 plt.plot(
                     hist.index,
                     hist["Close"],
-                    label=f"{ticker} - Close",
+                    label=f"{ticker.ticker} - Close",
                     zorder=next_zorder(),
                 )
             case "running-avg", num_days:
