@@ -1,11 +1,16 @@
 from matplotlib.ticker import ScalarFormatter, LogLocator
 import numpy
 from pandas import DataFrame
-from typing import Literal, Sequence
-from matplotlib.typing import RcStyleType
+from typing import Literal, Sequence, TypeAlias
+
 import yfinance as yf
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
+
+try:
+    from matplotlib.typing import RcStyleType
+except ModuleNotFoundError:
+    RcStyleType: TypeAlias = str
 
 _zorder_counter = 0
 
