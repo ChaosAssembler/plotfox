@@ -1,9 +1,8 @@
+from plotfox.ticker import Ticker
 from matplotlib.ticker import ScalarFormatter, LogLocator
 import numpy
 from pandas import DataFrame
 from typing import Literal, Sequence, TypeAlias
-
-import yfinance as yf
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
@@ -54,7 +53,7 @@ ChartTransform = (
 
 
 def plot(
-    ticker: yf.Ticker,
+    ticker: Ticker,
     charts: Sequence[ChartTransform] = ("candlestick",),
     period="max",
     style: RcStyleType = "dark_background",
@@ -77,14 +76,14 @@ def plot(
                 plt.plot(
                     hist.index,
                     hist["Open"],
-                    label=f"{ticker.ticker} - Open",
+                    label=f"{ticker} - Open",
                     zorder=next_zorder(),
                 )
             case "close":
                 plt.plot(
                     hist.index,
                     hist["Close"],
-                    label=f"{ticker.ticker} - Close",
+                    label=f"{ticker} - Close",
                     zorder=next_zorder(),
                 )
             case "running-avg", num_days:
@@ -151,7 +150,7 @@ def plot(
                     zorder=next_zorder(),
                 )
 
-    plt.title(f"{ticker.ticker} over {period}")
+    plt.title(f"{ticker} over {period}")
     plt.xlabel("Date")
     plt.ylabel("Price")
     plt.yscale("log")
@@ -162,14 +161,14 @@ def plot(
 
 
 def main():
-    dro = yf.Ticker("DRH.MU")
+    dro = Ticker("^GSPC") / Ticker("GOLD")
     plot(
         dro,
-        period="10y",
+        period="max",
         charts=(
-            "candlestick",
+            # "candlestick",
             # ("running-avg", 50),
-            # "close",
+            "close",
             # ("mid-running-avg", 50),
             # ("mid-running-avg", 100),
             # ("mid-running-avg", 150),
