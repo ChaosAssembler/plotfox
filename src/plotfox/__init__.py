@@ -47,7 +47,7 @@ def candlestick_chart(hist: DataFrame):
 
 
 ChartTransform = (
-    Literal["candlestick", "close", "open"]
+    Literal["candlestick", "close", "open", "volume"]
     | tuple[Literal["running-avg", "mid-running-avg"], int]
 )
 
@@ -64,30 +64,51 @@ def plot(
     dispT = numpy.exp2
 
     plt.style.use(style)
-    plt.grid(
+
+    ax = plt.axes()
+    ax.grid(
         True, which="both", axis="y", zorder=next_zorder(), color=(0.5, 0.5, 0.5, 0.5)
     )
+
+    _tw_ax = None
+
+    def tw_ax():
+        nonlocal _tw_ax
+        if _tw_ax is None:
+            _tw_ax = ax.twinx()
+        return _tw_ax
 
     for chart in charts:
         match chart:
             case "candlestick":
                 candlestick_chart(hist)
             case "open":
-                plt.plot(
+                ax.plot(
                     hist.index,
                     hist["Open"],
                     label=f"{ticker} - Open",
                     zorder=next_zorder(),
                 )
             case "close":
-                plt.plot(
+                ax.plot(
                     hist.index,
                     hist["Close"],
                     label=f"{ticker} - Close",
                     zorder=next_zorder(),
                 )
+            case "volume":
+                bar_width = (hist.index[1:] - hist.index[:-1]).min()
+                tw_ax().set_ylabel("Volume")
+                tw_ax().bar(
+                    hist.index,
+                    hist["Volume"],
+                    label=f"{ticker} - Volume",
+                    width=bar_width,
+                    color=(0.5, 0.5, 0.5, 0.5),
+                    zorder=next_zorder(),
+                )
             case "running-avg", num_days:
-                plt.plot(
+                ax.plot(
                     hist.index,
                     dispT(hist["CloseT"].rolling(window=num_days).mean()),
                     label=f"{num_days}-Day Running Avg.",
@@ -97,7 +118,7 @@ def plot(
                 hist["CloseT_ravg"] = (
                     hist["CloseT"].rolling(window=num_days, center=True).mean()
                 )
-                plt.plot(
+                ax.plot(
                     hist.index,
                     dispT(hist["CloseT_ravg"]),
                     label=f"{num_days}-Day Mid. Running Avg.",
@@ -143,39 +164,40 @@ def plot(
                 hist["ravg_lin_predT"] = ravg_endT * ravg_lin_w + line_pred_m1p5T[
                     -len(ravg_endT) :
                 ] * (1 - ravg_lin_w)
-                plt.plot(
+                ax.plot(
                     hist.index,
                     dispT(hist["ravg_lin_predT"]),
                     label=f"{num_days}-Day Mid. Running Avg. Pred.",
                     zorder=next_zorder(),
                 )
 
-    plt.title(f"{ticker} over {period}")
-    plt.xlabel("Date")
-    plt.ylabel("Price")
-    plt.yscale("log")
-    plt.gca().yaxis.set_major_formatter(ScalarFormatter())
-    plt.gca().yaxis.set_major_locator(LogLocator(subs="all"))
-    plt.legend()
+    ax.set_title(f"{ticker} over {period}")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Price")
+    ax.set_yscale("log")
+    ax.yaxis.set_major_formatter(ScalarFormatter())
+    ax.yaxis.set_major_locator(LogLocator(subs="all"))
+    ax.legend()
     plt.show()
 
 
 def main():
-    dro = Ticker("^GSPC") / Ticker("GOLD")
+    tck = Ticker("SAP")
     plot(
-        dro,
+        tck,
         period="max",
         charts=(
             # "candlestick",
             # ("running-avg", 50),
             "close",
+            "volume",
             # ("mid-running-avg", 50),
             # ("mid-running-avg", 100),
             # ("mid-running-avg", 150),
             # ("mid-running-avg", 200),
-            ("mid-running-avg", 300),
-            ("mid-running-avg", 500),
-            ("mid-running-avg", 1000),
+            # ("mid-running-avg", 300),
+            # ("mid-running-avg", 500),
+            # ("mid-running-avg", 1000),
         ),
     )
 
